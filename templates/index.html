@@ -301,6 +301,22 @@
       background: var(--success);
     }
 
+    .nb .progress-bar {
+      background: #7c3aed;
+    }
+
+    .badge.nbprob {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .nb-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
     .premise-list {
       font-size: 12px;
       color: var(--text-muted);
@@ -449,12 +465,36 @@
             {% endif %}
           </div>
         </div>
+
+        <!-- NAIVE BAYES -->
+        <div class="result-card nb" style="margin-top: 24px">
+          <h3>Naive Bayes &mdash; Probabilitas</h3>
+          {% if hasil_nb %} {% for r in hasil_nb %}
+          <div class="disease-item">
+            <div class="disease-head">
+              <span class="disease-name">{{ r.disease }}</span>
+              <span class="badge nbprob">{{ (r.probability * 100) | round(1) }}%</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" style="width: {{ (r.probability * 100) | round(1) }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+          <div class="nb-note">
+            Probabilitas tiap penyakit bila gejala di atas yang dialami
+            (total 100%). Dihitung dengan Bernoulli Naive Bayes dari basis
+            aturan + Laplace smoothing &mdash; lihat <code>nb_model.py</code>.
+          </div>
+          {% else %}
+          <div class="empty">Pilih gejala lalu proses untuk melihat probabilitas.</div>
+          {% endif %}
+        </div>
       </div>
       {% endif %}
 
       <div class="footer-note">
         Knowledge base: {{ symptoms | length }} gejala · 4 rule produksi ·
-        Ambang kecocokan ≥ 34%
+        Ambang kecocokan ≥ 34% · + Naive Bayes probabilistik
       </div>
     </div>
   </div>

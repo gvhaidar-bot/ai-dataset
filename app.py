@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 
+from nb_model import predict_proba as nb_predict_proba
+
 app = Flask(__name__)
 
 # ============================================================
@@ -129,6 +131,7 @@ def home():
     gejala_terpilih = []
     hasil_fc = []
     hasil_bc = []
+    hasil_nb = []
     submitted = False
 
     if request.method == "POST":
@@ -137,6 +140,11 @@ def home():
         if gejala_terpilih:
             hasil_fc = forward_chaining(gejala_terpilih)
             hasil_bc = backward_chaining(gejala_terpilih)
+            # Naive Bayes: probabilitas tiap penyakit (total 100%).
+            hasil_nb = [
+                {"disease": d, "probability": p}
+                for d, p in nb_predict_proba(gejala_terpilih)
+            ]
 
     return render_template(
         "index.html",
@@ -146,6 +154,7 @@ def home():
         gejala_terpilih=gejala_terpilih,
         hasil_fc=hasil_fc,
         hasil_bc=hasil_bc,
+        hasil_nb=hasil_nb,
         submitted=submitted,
     )
 
