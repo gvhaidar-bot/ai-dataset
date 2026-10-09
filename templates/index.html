@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Pakar Diagnosis Penyakit</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+        Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 32px;
+      background-color: var(--surface);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    /* ---------- Dropdown + Add ---------- */
+    .symptom-picker {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .symptom-picker select {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-main);
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .symptom-picker select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-add {
+      padding: 10px 16px;
+      background: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-add:hover {
+      background: #f1f5f9;
+    }
+
+    /* ---------- Chips ---------- */
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 48px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+
+    .chips-container:empty::before {
+      content: "Belum ada gejala dipilih";
+      color: var(--text-muted);
+      font-size: 14px;
+      align-self: center;
+      padding-left: 4px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .chip-remove {
+      background: transparent;
+      border: none;
+      color: #1e3a8a;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.6;
+    }
+
+    .chip-remove:hover {
+      opacity: 1;
+    }
+
+    /* ---------- Tombol Submit ---------- */
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    /* ---------- Hasil ---------- */
+    .results {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 700px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: 24px;
+      }
+    }
+
+    .result-card {
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .result-card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .disease-item {
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .disease-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .disease-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .disease-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .badge.confirmed {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .badge.likely {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .badge.possible {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge.weak {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .progress {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--primary);
+    }
+
+    .bc .progress-bar {
+      background: var(--success);
+    }
+
+    .premise-list {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .premise-list .ok {
+      color: var(--success);
+    }
+
+    .premise-list .miss {
+      color: #ef4444;
+      text-decoration: line-through;
+      opacity: 0.8;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .alert-warning {
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fef3c7;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Sistem Pakar Diagnosis Klinis</h1>
+      <p>Pilih gejala yang dialami pasien — tidak harus lengkap</p>
+    </div>
+
+    <div class="content">
+      <form method="POST" action="/" id="diagnosis-form">
+        <div class="section-title">Tambahkan gejala yang relevan:</div>
+
+        <div class="symptom-picker">
+          <select id="symptom-select">
+            <option value="">-- Pilih gejala --</option>
+            {% for s in symptoms %}
+            <option value="{{ s.code }}">
+              {{ s.icon }}&nbsp;&nbsp;{{ s.label }}
+            </option>
+            {% endfor %}
+          </select>
+          <button type="button" class="btn-add" id="add-btn">+ Tambah</button>
+        </div>
+
+        <div class="chips-container" id="chips-container"></div>
+
+        <!-- hidden inputs akan di-generate oleh JS -->
+        <div id="hidden-inputs"></div>
+
+        <button type="submit" class="btn-submit">Proses Diagnosis</button>
+      </form>
+
+      {% if submitted %}
+      <div class="results">
+        {% if not gejala_terpilih %}
+        <div class="alert alert-warning">
+          Silakan tambahkan minimal satu gejala terlebih dahulu.
+        </div>
+        {% endif %}
+
+        <div class="results-grid">
+          <!-- FORWARD CHAINING -->
+          <div class="result-card fc">
+            <h3>Forward Chaining</h3>
+            {% if hasil_fc %} {% for r in hasil_fc %}
+            <div class="disease-item">
+              <div class="disease-head">
+                <span class="disease-name">{{ r.disease }}</span>
+                <span class="badge {{ r.status | lower }}">{{ r.status }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: {{ (r.score * 100) | round(0) }}%"></div>
+              </div>
+              <div class="premise-list">
+                [{{ r.rule_id }}] {% for p in r.premises %} {% if p in
+                r.matched %}
+                <span class="ok">✓ {{ symptom_label[p] }}</span>
+                {% else %}
+                <span class="miss">✗ {{ symptom_label[p] }}</span>
+                {% endif %} {% if not loop.last %} + {% endif %} {% endfor %}
+                → <b>{{ r.disease }}</b>
+                <br />
+                <small>Kecocokan: {{ (r.score * 100) | round(0) }}% ({{ r.matched
+                  | length }}/{{ r.premises | length }} gejala)</small>
+              </div>
+            </div>
+            {% endfor %} {% else %}
+            <div class="empty">Tidak ada rule yang cocok dengan gejala.</div>
+            {% endif %}
+          </div>
+
+          <!-- BACKWARD CHAINING -->
+          <div class="result-card bc">
+            <h3>Backward Chaining</h3>
+            {% if hasil_bc %} {% for r in hasil_bc %}
+            <div class="disease-item">
+              <div class="disease-head">
+                <span class="disease-name">{{ r.goal }}</span>
+                <span class="badge {{ r.status | lower }}">{{ r.status }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: {{ (r.score * 100) | round(0) }}%"></div>
+              </div>
+              <div class="premise-list">
+                <b>{{ r.goal }}?</b> ← [{{ r.rule_id }}] {% for p in
+                r.premises %} {% if p in r.matched %}
+                <span class="ok">✓ {{ symptom_label[p] }}</span>
+                {% else %}
+                <span class="miss">✗ {{ symptom_label[p] }}</span>
+                {% endif %} {% if not loop.last %} + {% endif %} {% endfor %}
+                <br />
+                <small>Terbukti: {{ (r.score * 100) | round(0) }}% ({{ r.matched |
+                  length }}/{{ r.premises | length }})</small>
+              </div>
+            </div>
+            {% endfor %} {% else %}
+            <div class="empty">Tidak ada hipotesis yang bisa dibuktikan.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="footer-note">
+        Knowledge base: {{ symptoms | length }} gejala · 4 rule produksi ·
+        Ambang kecocokan ≥ 34%
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data gejala yang sudah dipilih (dari server, agar persisten)
+    const selected = new Set({{ gejala_terpilih | tojson }});
+    const symptoms = {{ symptoms | tojson }};
+    const symptomMap = Object.fromEntries(symptoms.map(s => [s.code, s]));
+
+    const container = document.getElementById('chips-container');
+    const hiddenBox = document.getElementById('hidden-inputs');
+    const select = document.getElementById('symptom-select');
+    const addBtn = document.getElementById('add-btn');
+
+    function render() {
+      container.innerHTML = '';
+      hiddenBox.innerHTML = '';
+
+      selected.forEach(code => {
+        const s = symptomMap[code];
+        if (!s) return;
+
+        // chip
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `
+            <span>${s.icon} ${s.label}</span>
+            <button type="button" class="chip-remove" data-code="${code}" title="Hapus">✕</button>
+          `;
+        container.appendChild(chip);
+
+        // hidden input
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'gejala';
+        inp.value = code;
+        hiddenBox.appendChild(inp);
+      });
+
+      // tombol hapus
+      container.querySelectorAll('.chip-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selected.delete(btn.dataset.code);
+          render();
+        });
+      });
+    }
+
+    addBtn.addEventListener('click', () => {
+      const code = select.value;
+      if (!code) { select.focus(); return; }
+      if (selected.has(code)) {
+        select.value = '';
+        return;
+      }
+      selected.add(code);
+      select.value = '';
+      render();
+      select.focus();
+    });
+
+    // tekan Enter di dropdown = tambah
+    select.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); }
+    });
+
+    render();
+  </script>
+</body>
+
+</html>
